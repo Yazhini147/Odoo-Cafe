@@ -69,8 +69,8 @@ export default function KitchenDisplay() {
       order.status === 'To Cook'
         ? 'Preparing'
         : order.status === 'Preparing'
-        ? 'Completed'
-        : 'Completed';
+          ? 'Completed'
+          : 'Completed';
 
     const updatedOrders = orders.map((item) =>
       item.orderNumber === order.orderNumber ? { ...item, status: nextStatus } : item
