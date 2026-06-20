@@ -72,7 +72,7 @@ export default function Dashboard() {
         <div className="rounded-3xl bg-white p-8 shadow-sm shadow-slate-200/80">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Restaurant POS</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Odoo Cafe</p>
               <h1 className="text-3xl font-semibold text-slate-900">Dashboard</h1>
             </div>
             <button

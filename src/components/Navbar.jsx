@@ -10,7 +10,7 @@ export default function Navbar({ employeeName, tableNumber, searchValue, onSearc
           R
         </div>
         <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Restaurant POS</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Odoo Cafe</p>
           <h1 className="text-xl font-semibold text-slate-900">Cafe Central</h1>
         </div>
       </div>
@@ -39,13 +39,6 @@ export default function Navbar({ employeeName, tableNumber, searchValue, onSearc
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => navigate('/admin')}
-            className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            Admin
-          </button>
-          <button
-            type="button"
             onClick={() => navigate('/dashboard')}
             className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
           >
@@ -64,20 +57,6 @@ export default function Navbar({ employeeName, tableNumber, searchValue, onSearc
             className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
           >
             Kitchen
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/customers')}
-            className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            Customers
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/customers', { state: { selectMode: true } })}
-            className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
-          >
-            Select Customer
           </button>
         </div>
       </div>

@@ -37,13 +37,29 @@ export default function TableSelection({ onSelectTable }) {
         <div className="rounded-3xl bg-white p-8 shadow-sm shadow-slate-200/80">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Restaurant POS</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Odoo Cafe</p>
               <h1 className="text-3xl font-semibold text-slate-900">Table Selection</h1>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-slate-600">
-              Choose a floor and select a table to start the order. Table statuses update the availability view.
-            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/kitchen')}
+                className="rounded-3xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              >
+                Kitchen Display
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/admin')}
+                className="rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+              >
+                Admin
+              </button>
+            </div>
           </div>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600">
+            Choose a floor and select a table to start the order. Table statuses update the availability view.
+          </p>
         </div>
 
         <div className="rounded-3xl bg-white p-6 shadow-sm shadow-slate-200/80">

@@ -12,7 +12,8 @@ const parseJSON = (key) => {
 export default function Admin() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('products');
-  const [products, setProducts] = useState([]);
+  // ✅ Initialize synchronously — no race condition with useEffect
+  const [products, setProducts] = useState(() => parseJSON('products'));
   const [categories, setCategories] = useState([]);
   const [tables, setTables] = useState([]);
 
@@ -24,7 +25,6 @@ export default function Admin() {
   const [editingType, setEditingType] = useState(null);
 
   useEffect(() => {
-    setProducts(parseJSON('products'));
     setCategories(parseJSON('admin_categories'));
     setTables(parseJSON('admin_tables'));
   }, []);
@@ -44,11 +44,14 @@ export default function Admin() {
       category: productForm.category,
     };
 
+    // ✅ Always read fresh from localStorage — guards against any stale closure
+    const existingProducts = parseJSON('products');
+
     let updatedProducts;
     if (editingId) {
-      updatedProducts = products.map((p) => (p.id === editingId ? newProduct : p));
+      updatedProducts = existingProducts.map((p) => (p.id === editingId ? newProduct : p));
     } else {
-      updatedProducts = [...products, newProduct];
+      updatedProducts = [...existingProducts, newProduct];
     }
 
     setProducts(updatedProducts);
@@ -174,7 +177,7 @@ export default function Admin() {
         <div className="rounded-3xl bg-white p-8 shadow-sm shadow-slate-200/80">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Restaurant POS</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Odoo Cafe</p>
               <h1 className="text-3xl font-semibold text-slate-900">Admin Dashboard</h1>
             </div>
             <button
