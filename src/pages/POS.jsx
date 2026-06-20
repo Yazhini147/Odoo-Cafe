@@ -116,24 +116,24 @@ export default function POS({ tableNumber, selectedCustomer }) {
 
   const handlePayment = (method) => {
     const existingOrders = parseJSON('restaurant_orders');
-    
-    // Find the most recent incomplete order for this table
+
+    // Find the most recent unpaid order for this table
     const tableOrders = existingOrders.filter((o) => o.tableNumber === tableNumber);
-    const unpaidOrder = tableOrders.find((o) => o.status !== 'Paid');
-    
+    const unpaidOrder = tableOrders.find((o) => o.paymentStatus !== 'Paid');
+
     if (!unpaidOrder) {
       alert('Please send items to kitchen first before completing payment.');
       return;
     }
 
-    // Update the order to Paid
+    // ONLY update payment fields — never touch `status` (kitchen workflow)
     const updatedOrders = existingOrders.map((o) =>
       o.orderNumber === unpaidOrder.orderNumber
         ? {
             ...o,
-            status: 'Paid',
+            paymentStatus: 'Paid',
             paymentMethod: method,
-            paidAt: new Date().toLocaleString(),
+            paymentTime: new Date().toLocaleString(),
           }
         : o
     );
