@@ -16,7 +16,15 @@ const productList = [
 
 const categories = ['All', 'Beverages', 'Snacks', 'Meals', 'Desserts'];
 
-export default function POS({ tableNumber }) {
+const parseJSON = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || [];
+  } catch {
+    return [];
+  }
+};
+
+export default function POS({ tableNumber, selectedCustomer }) {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -94,7 +102,7 @@ export default function POS({ tableNumber }) {
       createdAt: new Date().toLocaleString(),
     };
 
-    const existingOrders = JSON.parse(localStorage.getItem('restaurant_orders') || '[]');
+    const existingOrders = parseJSON('restaurant_orders');
     localStorage.setItem('restaurant_orders', JSON.stringify([order, ...existingOrders]));
 
     alert('Order Sent To Kitchen');
@@ -117,7 +125,7 @@ export default function POS({ tableNumber }) {
       createdAt: new Date().toLocaleString(),
     };
 
-    const existingOrders = JSON.parse(localStorage.getItem('restaurant_orders') || '[]');
+    const existingOrders = parseJSON('restaurant_orders');
     localStorage.setItem('restaurant_orders', JSON.stringify([order, ...existingOrders]));
 
     alert('Payment Successful');

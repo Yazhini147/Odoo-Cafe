@@ -5,9 +5,16 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
 
+  const parseJSON = (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || [];
+    } catch {
+      return [];
+    }
+  };
+
   useEffect(() => {
-    const storedOrders = localStorage.getItem('restaurant_orders');
-    setOrders(storedOrders ? JSON.parse(storedOrders) : []);
+    setOrders(parseJSON('restaurant_orders'));
   }, []);
 
   return (
