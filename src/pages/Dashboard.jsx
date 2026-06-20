@@ -28,6 +28,7 @@ export default function Dashboard() {
   const summary = useMemo(() => {
     const totalOrders = orders.length;
     const completedOrders = orders.filter((order) => order.status === 'Completed').length;
+    const paidOrders = orders.filter((order) => order.status === 'Paid').length;
     const revenueOrders = orders.filter((order) => ['Paid', 'Completed'].includes(order.status));
     const revenue = revenueOrders.reduce((sum, order) => sum + order.total, 0);
     const averageOrderValue = totalOrders > 0 ? revenue / totalOrders : 0;
@@ -37,12 +38,21 @@ export default function Dashboard() {
       return counts;
     }, {});
 
+    const paymentMethodRevenue = orders.reduce((acc, order) => {
+      if (['Paid', 'Completed'].includes(order.status) && order.paymentMethod) {
+        acc[order.paymentMethod] = (acc[order.paymentMethod] || 0) + order.total;
+      }
+      return acc;
+    }, {});
+
     return {
       totalOrders,
       completedOrders,
+      paidOrders,
       revenue,
       averageOrderValue,
       statusCounts,
+      paymentMethodRevenue,
     };
   }, [orders]);
 
@@ -92,8 +102,8 @@ export default function Dashboard() {
             <p className="mt-5 text-4xl font-semibold text-slate-900">₹{summary.averageOrderValue.toFixed(2)}</p>
           </div>
           <div className="rounded-3xl bg-white p-6 shadow-sm shadow-slate-200/80">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Completed Orders</p>
-            <p className="mt-5 text-4xl font-semibold text-slate-900">{summary.completedOrders}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Paid Orders</p>
+            <p className="mt-5 text-4xl font-semibold text-slate-900">{summary.paidOrders}</p>
           </div>
         </div>
 
@@ -112,8 +122,8 @@ export default function Dashboard() {
                 <p className="mt-3 text-2xl font-semibold text-slate-900">₹{summary.revenue.toFixed(2)}</p>
               </div>
               <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Order count</p>
-                <p className="mt-3 text-2xl font-semibold text-slate-900">{summary.totalOrders}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Paid Orders</p>
+                <p className="mt-3 text-2xl font-semibold text-slate-900">{summary.paidOrders}</p>
               </div>
             </div>
             <div className="mt-6 rounded-3xl bg-slate-100 p-5 text-sm leading-6 text-slate-600">
@@ -124,23 +134,45 @@ export default function Dashboard() {
           <div className="rounded-3xl bg-white p-6 shadow-sm shadow-slate-200/80">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Order Status Summary</p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900">Status distribution</h2>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Payment Methods</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">Revenue breakdown</h2>
               </div>
             </div>
             <div className="mt-8 space-y-4">
-              {['Paid', 'Completed', 'To Cook', 'Preparing', 'Draft'].map((status) => (
-                <div key={status} className="flex items-center justify-between rounded-3xl bg-slate-50 p-4">
+              {['Cash', 'Card', 'UPI'].map((method) => (
+                <div key={method} className="flex items-center justify-between rounded-3xl bg-slate-50 p-4">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{status}</p>
-                    <p className="text-sm text-slate-600">{summary.statusCounts[status] || 0} order(s)</p>
+                    <p className="text-sm font-semibold text-slate-900">{method}</p>
+                    <p className="text-sm text-slate-600">
+                      {orders.filter((o) => ['Paid', 'Completed'].includes(o.status) && o.paymentMethod === method).length} order(s)
+                    </p>
                   </div>
-                  <span className={`rounded-2xl px-4 py-2 text-sm font-semibold ${statusStyles[status]}`}>
-                    {summary.statusCounts[status] || 0}
+                  <span className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
+                    ₹{(summary.paymentMethodRevenue[method] || 0).toFixed(2)}
                   </span>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div className="rounded-3xl bg-white p-6 shadow-sm shadow-slate-200/80">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Order Status Summary</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-900">Status distribution</h2>
+            </div>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {['Paid', 'Completed', 'To Cook', 'Preparing', 'Draft'].map((status) => (
+              <div key={status} className="flex flex-col items-center rounded-3xl bg-slate-50 p-4 text-center">
+                <p className="text-sm font-semibold text-slate-900">{status}</p>
+                <p className="mt-3 text-3xl font-semibold text-slate-900">{summary.statusCounts[status] || 0}</p>
+                <span className={`mt-2 rounded-2xl px-3 py-1 text-xs font-semibold ${statusStyles[status]}`}>
+                  order(s)
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -172,6 +204,7 @@ export default function Dashboard() {
                     <th className="px-6 py-4 uppercase tracking-[0.2em]">Table</th>
                     <th className="px-6 py-4 uppercase tracking-[0.2em]">Status</th>
                     <th className="px-6 py-4 uppercase tracking-[0.2em]">Total</th>
+                    <th className="px-6 py-4 uppercase tracking-[0.2em]">Payment</th>
                     <th className="px-6 py-4 uppercase tracking-[0.2em]">Date</th>
                   </tr>
                 </thead>
@@ -186,6 +219,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-slate-900">₹{order.total.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-slate-600">{order.paymentMethod || '-'}</td>
                       <td className="px-6 py-4 text-slate-500">{order.createdAt}</td>
                     </tr>
                   ))}

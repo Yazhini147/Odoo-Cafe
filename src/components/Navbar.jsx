@@ -39,6 +39,13 @@ export default function Navbar({ employeeName, tableNumber, searchValue, onSearc
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
+            onClick={() => navigate('/admin')}
+            className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+          >
+            Admin
+          </button>
+          <button
+            type="button"
             onClick={() => navigate('/dashboard')}
             className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
           >

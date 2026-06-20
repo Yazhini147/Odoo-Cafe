@@ -6,6 +6,7 @@ import KitchenDisplay from './pages/KitchenDisplay';
 import TableSelection from './pages/TableSelection';
 import Customers from './pages/Customer';
 import Dashboard from './pages/Dashboard';
+import Admin from './pages/Admin';
 
 function App() {
   const [selectedTable, setSelectedTable] = useState(null);
@@ -20,6 +21,7 @@ function App() {
         <Route path="/orders" element={<Orders />} />
         <Route path="/kitchen" element={<KitchenDisplay />} />
         <Route path="/customers" element={<Customers onSelectCustomer={setSelectedCustomer} />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<TableSelection onSelectTable={setSelectedTable} />} />
       </Routes>
     </BrowserRouter>
