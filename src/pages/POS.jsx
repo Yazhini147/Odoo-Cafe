@@ -88,6 +88,8 @@ export default function POS({ tableNumber, selectedCustomer }) {
   const totalAmount = parseFloat((subtotal + tax).toFixed(2));
 
   const handleSendToKitchen = () => {
+    console.log('SEND TO KITCHEN CLICKED');
+    console.log('Cart Items:', cartItems);
     if (cartItems.length === 0) {
       alert('Add items to the cart before sending the order.');
       return;
@@ -103,31 +105,40 @@ export default function POS({ tableNumber, selectedCustomer }) {
     };
 
     const existingOrders = parseJSON('restaurant_orders');
-    localStorage.setItem('restaurant_orders', JSON.stringify([order, ...existingOrders]));
+    const allOrders = [order, ...existingOrders];
+    console.log('Order being saved:', order);
+    localStorage.setItem('restaurant_orders', JSON.stringify(allOrders));
+    console.log('Saved Orders:', JSON.parse(localStorage.getItem('restaurant_orders')));
 
     alert('Order Sent To Kitchen');
     setCartItems([]);
   };
 
   const handlePayment = (method) => {
-    if (cartItems.length === 0) {
-      alert('Add items to the cart before payment.');
+    const existingOrders = parseJSON('restaurant_orders');
+    
+    // Find the most recent incomplete order for this table
+    const tableOrders = existingOrders.filter((o) => o.tableNumber === tableNumber);
+    const unpaidOrder = tableOrders.find((o) => o.status !== 'Paid');
+    
+    if (!unpaidOrder) {
+      alert('Please send items to kitchen first before completing payment.');
       return;
     }
 
-    const order = {
-      orderNumber: `ORD-${Date.now()}`,
-      tableNumber,
-      items: cartItems,
-      total: totalAmount,
-      status: 'Paid',
-      paymentMethod: method,
-      createdAt: new Date().toLocaleString(),
-    };
+    // Update the order to Paid
+    const updatedOrders = existingOrders.map((o) =>
+      o.orderNumber === unpaidOrder.orderNumber
+        ? {
+            ...o,
+            status: 'Paid',
+            paymentMethod: method,
+            paidAt: new Date().toLocaleString(),
+          }
+        : o
+    );
 
-    const existingOrders = parseJSON('restaurant_orders');
-    localStorage.setItem('restaurant_orders', JSON.stringify([order, ...existingOrders]));
-
+    localStorage.setItem('restaurant_orders', JSON.stringify(updatedOrders));
     alert('Payment Successful');
     setCartItems([]);
   };

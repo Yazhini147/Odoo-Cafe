@@ -21,7 +21,37 @@ export default function KitchenDisplay() {
   };
 
   useEffect(() => {
-    setOrders(parseJSON('restaurant_orders'));
+    const loadedOrders = parseJSON('restaurant_orders');
+    console.log('🔍 KITCHEN LOADED ORDERS:', loadedOrders);
+    console.log('🔍 STORAGE KEY READ:', localStorage.getItem('restaurant_orders'));
+    setOrders(loadedOrders);
+
+    // Listen for storage changes from other tabs/windows
+    const handleStorageChange = () => {
+      const updatedOrders = parseJSON('restaurant_orders');
+      console.log('🔄 KITCHEN STORAGE UPDATED (cross-tab):', updatedOrders.length, 'orders');
+      setOrders(updatedOrders);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Poll for same-window updates (since storage event doesn't fire in same window)
+    const pollInterval = setInterval(() => {
+      const currentOrders = parseJSON('restaurant_orders');
+      setOrders((prevOrders) => {
+        const prevJSON = JSON.stringify(prevOrders);
+        const currentJSON = JSON.stringify(currentOrders);
+        if (prevJSON !== currentJSON) {
+          console.log('🔄 KITCHEN STORAGE UPDATED (polling):', currentOrders.length, 'orders');
+        }
+        return currentOrders;
+      });
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   const statusBuckets = useMemo(
@@ -45,8 +75,10 @@ export default function KitchenDisplay() {
       item.orderNumber === order.orderNumber ? { ...item, status: nextStatus } : item
     );
 
+    console.log('📋 KITCHEN UPDATE STATUS:', order.orderNumber, '→', nextStatus);
     setOrders(updatedOrders);
     localStorage.setItem('restaurant_orders', JSON.stringify(updatedOrders));
+    console.log('📋 KITCHEN SAVED:', updatedOrders.length, 'orders');
   };
 
   return (
