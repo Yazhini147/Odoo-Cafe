@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import Cart from '../components/Cart';
 import OrderSummary from '../components/OrderSummary';
+import useAuthGuard from '../hooks/useAuthGuard';
 
 const DEFAULT_PRODUCTS = [
   { id: 1, name: 'Burger', price: 120, category: 'Meals' },
@@ -138,14 +139,58 @@ function ReceiptModal({ receipt, onClose }) {
   );
 }
 
+// ── Upi QR Modal ─────────────────────────────────────────────────────────────
+function UpiQrModal({ amount, upiId, onConfirm, onClose }) {
+  if (!upiId) return null;
+  const upiUrl = `upi://pay?pa=${upiId}&pn=Odoo%20Cafe&am=${amount}&cu=INR`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl text-center space-y-6">
+        <h3 className="text-xl font-bold text-slate-900">Scan & Pay</h3>
+        <p className="text-sm text-slate-500">Scan this QR code using any UPI app to pay ₹{amount.toFixed(2)}</p>
+        
+        <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-2xl bg-slate-50 p-2 border border-slate-200">
+          <img src={qrCodeUrl} alt="UPI QR Code" className="h-full w-full object-contain" />
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-xs text-slate-400">UPI ID</p>
+          <p className="text-sm font-semibold text-slate-700">{upiId}</p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
+          >
+            Confirm Paid
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── POS Page ──────────────────────────────────────────────────────────────────
 export default function POS({ tableNumber, selectedCustomer }) {
+  useAuthGuard('Employee');
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [cartItems, setCartItems] = useState([]);
   const [productList, setProductList] = useState(DEFAULT_PRODUCTS);
   const [receipt, setReceipt] = useState(null);
+  const [upiModalData, setUpiModalData] = useState(null);
   // activeOrder persists across navigation via localStorage
   const [activeOrder, setActiveOrder] = useState(() => {
     try {
@@ -169,7 +214,7 @@ export default function POS({ tableNumber, selectedCustomer }) {
 
   useEffect(() => {
     if (!tableNumber) {
-      navigate('/');
+      navigate('/tables');
     }
   }, [navigate, tableNumber]);
 
@@ -250,18 +295,7 @@ export default function POS({ tableNumber, selectedCustomer }) {
     setCartItems([]);
   };
 
-  const handlePayment = (method) => {
-    const existingOrders = parseJSON('restaurant_orders');
-
-    // Find the most recent unpaid order for this table
-    const tableOrders = existingOrders.filter((o) => o.tableNumber === tableNumber);
-    const unpaidOrder = tableOrders.find((o) => o.paymentStatus !== 'Paid');
-
-    if (!unpaidOrder) {
-      alert('Please send items to kitchen first before completing payment.');
-      return;
-    }
-
+  const completePayment = (method, unpaidOrder, existingOrders) => {
     const paymentTime = new Date().toLocaleString();
 
     // ONLY update payment fields — never touch `status` (kitchen workflow)
@@ -293,11 +327,36 @@ export default function POS({ tableNumber, selectedCustomer }) {
     setActiveOrder(null);
   };
 
+  const handlePayment = (method) => {
+    const existingOrders = parseJSON('restaurant_orders');
+
+    // Find the most recent unpaid order for this table
+    const tableOrders = existingOrders.filter((o) => o.tableNumber === tableNumber);
+    const unpaidOrder = tableOrders.find((o) => o.paymentStatus !== 'Paid');
+
+    if (!unpaidOrder) {
+      alert('Please send items to kitchen first before completing payment.');
+      return;
+    }
+
+    if (method === 'UPI QR') {
+      let settings = { upiId: 'cafe@ybl' };
+      try {
+        const stored = localStorage.getItem('payment_settings');
+        if (stored) settings = JSON.parse(stored);
+      } catch {
+        // fallback
+      }
+      setUpiModalData({ amount: unpaidOrder.total, upiId: settings.upiId, unpaidOrder, existingOrders });
+    } else {
+      completePayment(method, unpaidOrder, existingOrders);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <Navbar
-          employeeName="Ram"
           tableNumber={tableNumber}
           searchValue={searchTerm}
           onSearch={setSearchTerm}
@@ -312,7 +371,7 @@ export default function POS({ tableNumber, selectedCustomer }) {
           </div>
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/tables')}
             className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
           >
             ← Back to Tables
@@ -388,6 +447,19 @@ export default function POS({ tableNumber, selectedCustomer }) {
 
       {/* Receipt modal — rendered after successful payment */}
       <ReceiptModal receipt={receipt} onClose={() => setReceipt(null)} />
+
+      {/* UPI QR Modal — rendered when UPI QR method is selected */}
+      {upiModalData && (
+        <UpiQrModal
+          amount={upiModalData.amount}
+          upiId={upiModalData.upiId}
+          onConfirm={() => {
+            completePayment('UPI QR', upiModalData.unpaidOrder, upiModalData.existingOrders);
+            setUpiModalData(null);
+          }}
+          onClose={() => setUpiModalData(null)}
+        />
+      )}
     </div>
   );
 }

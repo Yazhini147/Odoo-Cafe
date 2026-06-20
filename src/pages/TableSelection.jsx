@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuthGuard from '../hooks/useAuthGuard';
 
 const floorTabs = ['Ground Floor', 'First Floor'];
 
-const tableData = [
+const defaultTables = [
   { id: 1, number: 'Table 1', seats: 2, status: 'Available', floor: 'Ground Floor' },
   { id: 2, number: 'Table 2', seats: 4, status: 'Occupied', floor: 'Ground Floor' },
   { id: 3, number: 'Table 3', seats: 2, status: 'Available', floor: 'Ground Floor' },
@@ -18,17 +19,42 @@ const statusStyles = {
 };
 
 export default function TableSelection({ onSelectTable }) {
+  useAuthGuard('Employee');
   const [activeFloor, setActiveFloor] = useState('Ground Floor');
+  const [tablesList, setTablesList] = useState([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('tables');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setTablesList(parsed);
+        console.log('Tables loaded by TableSelection (from localStorage):', parsed);
+      } else {
+        setTablesList(defaultTables);
+        localStorage.setItem('tables', JSON.stringify(defaultTables));
+        console.log('Tables loaded by TableSelection (from defaultTables):', defaultTables);
+      }
+    } catch (e) {
+      setTablesList(defaultTables);
+      console.log('Tables loaded by TableSelection (from fallback):', defaultTables);
+    }
+  }, []);
+
   const tables = useMemo(
-    () => tableData.filter((table) => table.floor === activeFloor),
-    [activeFloor]
+    () => tablesList.filter((table) => table.floor === activeFloor),
+    [tablesList, activeFloor]
   );
 
   const handleTableClick = (table) => {
     onSelectTable(table);
     navigate('/pos');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('current_user');
+    navigate('/');
   };
 
   return (
@@ -50,10 +76,10 @@ export default function TableSelection({ onSelectTable }) {
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/admin')}
-                className="rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                onClick={handleLogout}
+                className="rounded-3xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-500"
               >
-                Admin
+                Logout
               </button>
             </div>
           </div>

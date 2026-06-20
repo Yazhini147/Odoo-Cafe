@@ -2,6 +2,21 @@ export default function OrderSummary({ subtotal, discount = 0, taxRate = 0.05, o
   const tax = subtotal * taxRate;
   const total = subtotal + tax - discount;
 
+  // Load payment settings dynamically from localStorage with defaults
+  const settings = (() => {
+    try {
+      const stored = localStorage.getItem('payment_settings');
+      return stored ? JSON.parse(stored) : { cash: true, card: true, upi: true, upiId: 'cafe@ybl' };
+    } catch {
+      return { cash: true, card: true, upi: true, upiId: 'cafe@ybl' };
+    }
+  })();
+
+  const methods = [];
+  if (settings.cash) methods.push('Cash');
+  if (settings.card) methods.push('Card');
+  if (settings.upi) methods.push('UPI QR');
+
   const handlePay = (method) => {
     if (typeof onPay === 'function') onPay(method);
   };
@@ -39,16 +54,22 @@ export default function OrderSummary({ subtotal, discount = 0, taxRate = 0.05, o
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {['Cash', 'Card', 'UPI'].map((method) => (
-          <button
-            key={method}
-            type="button"
-            onClick={() => handlePay(method)}
-            className="rounded-3xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            {method}
-          </button>
-        ))}
+        {methods.length === 0 ? (
+          <p className="col-span-3 text-center text-sm text-rose-500 font-semibold bg-rose-50 rounded-2xl py-3 px-4">
+            No payment methods enabled.
+          </p>
+        ) : (
+          methods.map((method) => (
+            <button
+              key={method}
+              type="button"
+              onClick={() => handlePay(method)}
+              className="rounded-3xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+            >
+              {method}
+            </button>
+          ))
+        )}
       </div>
     </section>
   );

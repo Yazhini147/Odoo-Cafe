@@ -66,7 +66,7 @@ export default function Customers({ onSelectCustomer }) {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/tables')}
                 className="rounded-3xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
               >
                 Back

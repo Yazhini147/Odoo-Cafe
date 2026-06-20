@@ -1,7 +1,26 @@
 import { useNavigate } from 'react-router-dom';
 
-export default function Navbar({ employeeName, tableNumber, searchValue, onSearch }) {
+export default function Navbar({ tableNumber, searchValue, onSearch }) {
   const navigate = useNavigate();
+  let displayName = 'Employee';
+  let roleLabel = 'EMPLOYEE';
+  try {
+    const stored = localStorage.getItem('current_user');
+    if (stored) {
+      const userObj = JSON.parse(stored);
+      roleLabel = userObj.role ? userObj.role.toUpperCase() : 'EMPLOYEE';
+      const usersList = JSON.parse(localStorage.getItem('users')) || [];
+      const found = usersList.find((u) => u.username.toLowerCase() === userObj.username.toLowerCase());
+      displayName = found ? found.name : userObj.username;
+    }
+  } catch {
+    // fallback
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('current_user');
+    navigate('/');
+  };
 
   return (
     <header className="flex flex-col gap-4 rounded-3xl bg-white/90 px-6 py-5 shadow-sm shadow-slate-200/80 backdrop-blur-lg md:flex-row md:items-center md:justify-between">
@@ -27,10 +46,10 @@ export default function Navbar({ employeeName, tableNumber, searchValue, onSearc
         />
       </div>
 
-        <div className="flex flex-col gap-2 rounded-3xl bg-slate-50 px-5 py-4 text-slate-700 shadow-sm shadow-slate-200/80 md:flex-row md:items-center">
+      <div className="flex flex-col gap-2 rounded-3xl bg-slate-50 px-5 py-4 text-slate-700 shadow-sm shadow-slate-200/80 md:flex-row md:items-center">
         <div className="rounded-2xl bg-slate-100 px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Employee</p>
-          <p className="mt-1 text-sm font-semibold">{employeeName}</p>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Staff</p>
+          <p className="mt-1 text-sm font-semibold">{roleLabel}: {displayName}</p>
         </div>
         <div className="rounded-2xl bg-slate-100 px-4 py-3">
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Table</p>
@@ -57,6 +76,13 @@ export default function Navbar({ employeeName, tableNumber, searchValue, onSearc
             className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
           >
             Kitchen
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-500"
+          >
+            Logout
           </button>
         </div>
       </div>

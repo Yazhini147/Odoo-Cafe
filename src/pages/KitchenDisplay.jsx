@@ -1,6 +1,7 @@
 // Nandu Hackathon Update
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuthGuard from '../hooks/useAuthGuard';
 
 const statuses = ['To Cook', 'Preparing', 'Completed'];
 const columnStyles = {
@@ -10,6 +11,7 @@ const columnStyles = {
 };
 
 export default function KitchenDisplay() {
+  useAuthGuard('Employee');
   const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
 
@@ -101,7 +103,7 @@ export default function KitchenDisplay() {
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/tables')}
                 className="rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
               >
                 Back to Table Selection
