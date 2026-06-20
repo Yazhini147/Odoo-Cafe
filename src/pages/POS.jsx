@@ -146,6 +146,14 @@ export default function POS({ tableNumber, selectedCustomer }) {
   const [cartItems, setCartItems] = useState([]);
   const [productList, setProductList] = useState(DEFAULT_PRODUCTS);
   const [receipt, setReceipt] = useState(null);
+  // activeOrder persists across navigation via localStorage
+  const [activeOrder, setActiveOrder] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('active_order')) || null;
+    } catch {
+      return null;
+    }
+  });
 
   // Load products from localStorage (Admin-managed), fall back to defaults
   useEffect(() => {
@@ -235,6 +243,9 @@ export default function POS({ tableNumber, selectedCustomer }) {
     const allOrders = [order, ...existingOrders];
     localStorage.setItem('restaurant_orders', JSON.stringify(allOrders));
 
+    // Persist order so it survives navigation to Kitchen and back
+    localStorage.setItem('active_order', JSON.stringify(order));
+    setActiveOrder(order);
     alert('Order Sent To Kitchen');
     setCartItems([]);
   };
@@ -278,6 +289,8 @@ export default function POS({ tableNumber, selectedCustomer }) {
     });
 
     setCartItems([]);
+    localStorage.removeItem('active_order'); // remove after payment
+    setActiveOrder(null);
   };
 
   return (
@@ -343,12 +356,24 @@ export default function POS({ tableNumber, selectedCustomer }) {
           />
 
           <div className="space-y-6">
-            <OrderSummary
-              subtotal={subtotal}
-              discount={0}
-              onPay={handlePayment}
-              selectedCustomer={selectedCustomer}
-            />
+            {/* When cart is empty but an order is pending payment, show the saved order total */}
+            {(() => {
+              const taxRate = 0.05;
+              const displaySubtotal =
+                cartItems.length > 0
+                  ? subtotal
+                  : activeOrder
+                  ? parseFloat((activeOrder.total / (1 + taxRate)).toFixed(2))
+                  : 0;
+              return (
+                <OrderSummary
+                  subtotal={displaySubtotal}
+                  discount={0}
+                  onPay={handlePayment}
+                  selectedCustomer={selectedCustomer}
+                />
+              );
+            })()}
             <button
               type="button"
               onClick={handleSendToKitchen}

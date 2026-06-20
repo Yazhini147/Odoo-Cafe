@@ -91,13 +91,22 @@ export default function KitchenDisplay() {
               <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Kitchen Display</p>
               <h1 className="text-3xl font-semibold text-slate-900">Kitchen Dashboard</h1>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-            >
-              Back to Table Selection
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/pos')}
+                className="rounded-3xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              >
+                ← Back to POS
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+              >
+                Back to Table Selection
+              </button>
+            </div>
           </div>
         </div>
 
