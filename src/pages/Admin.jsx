@@ -24,7 +24,7 @@ export default function Admin() {
   const [editingType, setEditingType] = useState(null);
 
   useEffect(() => {
-    setProducts(parseJSON('admin_products'));
+    setProducts(parseJSON('products'));
     setCategories(parseJSON('admin_categories'));
     setTables(parseJSON('admin_tables'));
   }, []);
@@ -52,7 +52,7 @@ export default function Admin() {
     }
 
     setProducts(updatedProducts);
-    localStorage.setItem('admin_products', JSON.stringify(updatedProducts));
+    localStorage.setItem('products', JSON.stringify(updatedProducts));
     setProductForm({ name: '', price: '', category: '' });
     setEditingId(null);
     setEditingType(null);
@@ -69,7 +69,7 @@ export default function Admin() {
     if (confirm('Delete this product?')) {
       const updatedProducts = products.filter((p) => p.id !== id);
       setProducts(updatedProducts);
-      localStorage.setItem('admin_products', JSON.stringify(updatedProducts));
+      localStorage.setItem('products', JSON.stringify(updatedProducts));
     }
   };
 

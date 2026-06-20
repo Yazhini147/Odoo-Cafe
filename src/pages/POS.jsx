@@ -5,7 +5,7 @@ import ProductCard from '../components/ProductCard';
 import Cart from '../components/Cart';
 import OrderSummary from '../components/OrderSummary';
 
-const productList = [
+const DEFAULT_PRODUCTS = [
   { id: 1, name: 'Burger', price: 120, category: 'Meals' },
   { id: 2, name: 'Pizza', price: 250, category: 'Meals' },
   { id: 3, name: 'Coffee', price: 80, category: 'Beverages' },
@@ -13,8 +13,6 @@ const productList = [
   { id: 5, name: 'Sandwich', price: 100, category: 'Snacks' },
   { id: 6, name: 'Ice Cream', price: 90, category: 'Desserts' },
 ];
-
-const categories = ['All', 'Beverages', 'Snacks', 'Meals', 'Desserts'];
 
 const parseJSON = (key) => {
   try {
@@ -29,6 +27,19 @@ export default function POS({ tableNumber, selectedCustomer }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [cartItems, setCartItems] = useState([]);
+  const [productList, setProductList] = useState(DEFAULT_PRODUCTS);
+
+  // Load products from localStorage (Admin-managed), fall back to defaults
+  useEffect(() => {
+    const saved = parseJSON('products');
+    setProductList(saved.length > 0 ? saved : DEFAULT_PRODUCTS);
+  }, []);
+
+  // Derive category list dynamically from the loaded products
+  const categories = useMemo(() => {
+    const unique = [...new Set(productList.map((p) => p.category))];
+    return ['All', ...unique];
+  }, [productList]);
 
   useEffect(() => {
     if (!tableNumber) {
