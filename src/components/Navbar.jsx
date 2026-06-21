@@ -1,3 +1,4 @@
+// ── Navbar — warm brown café theme ───────────────────────────────────────────
 import { useNavigate } from 'react-router-dom';
 
 export default function Navbar({ tableNumber, searchValue, onSearch }) {
@@ -23,64 +24,68 @@ export default function Navbar({ tableNumber, searchValue, onSearch }) {
   };
 
   return (
-    <header className="flex flex-col gap-4 rounded-3xl bg-white/90 px-6 py-5 shadow-sm shadow-slate-200/80 backdrop-blur-lg md:flex-row md:items-center md:justify-between">
+    <header className="flex flex-col gap-4 rounded-3xl border border-coffee-100 bg-white/95 px-6 py-4 shadow-coffee-md backdrop-blur-lg md:flex-row md:items-center md:justify-between">
+      {/* Brand */}
       <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-amber-500 text-2xl font-semibold text-white shadow-md shadow-amber-300/40">
-          R
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl text-2xl shadow-coffee-sm"
+             style={{ background: 'linear-gradient(135deg,#c97a34,#7e4720)' }}>
+          ☕
         </div>
         <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Odoo Cafe</p>
-          <h1 className="text-xl font-semibold text-slate-900">Cafe Central</h1>
+          <p className="section-label">Odoo Cafe</p>
+          <h1 className="text-lg font-bold" style={{ color: '#3b2010', fontFamily: "'Playfair Display', serif" }}>
+            Cafe Central
+          </h1>
         </div>
       </div>
 
-      <div className="flex flex-1 items-center gap-4 rounded-3xl bg-slate-100 px-4 py-3 shadow-inner shadow-slate-200/80">
-        <svg className="h-5 w-5 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.5a7.5 7.5 0 006.15-3.85z" />
+      {/* Search */}
+      <div className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-2.5 shadow-inner"
+           style={{ background: '#fdf6ee', border: '1.5px solid #eecba0' }}>
+        <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="#a8602a" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.5a7.5 7.5 0 006.15-3.85z" />
         </svg>
         <input
           value={searchValue}
           onChange={(e) => onSearch(e.target.value)}
-          placeholder="Search products"
-          className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+          placeholder="Search products…"
+          className="w-full bg-transparent text-sm outline-none"
+          style={{ color: '#3b2010' }}
         />
       </div>
 
-      <div className="flex flex-col gap-2 rounded-3xl bg-slate-50 px-5 py-4 text-slate-700 shadow-sm shadow-slate-200/80 md:flex-row md:items-center">
-        <div className="rounded-2xl bg-slate-100 px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Staff</p>
-          <p className="mt-1 text-sm font-semibold">{roleLabel}: {displayName}</p>
-        </div>
-        <div className="rounded-2xl bg-slate-100 px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Table</p>
-          <p className="mt-1 text-sm font-semibold">{tableNumber}</p>
+      {/* User info + nav */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center">
+        <div className="flex gap-2">
+          <div className="rounded-2xl px-4 py-2 text-center" style={{ background: '#f7e8d3' }}>
+            <p className="section-label text-[9px]">Staff</p>
+            <p className="mt-0.5 text-xs font-semibold" style={{ color: '#3b2010' }}>{roleLabel}: {displayName}</p>
+          </div>
+          <div className="rounded-2xl px-4 py-2 text-center" style={{ background: '#f7e8d3' }}>
+            <p className="section-label text-[9px]">Table</p>
+            <p className="mt-0.5 text-xs font-semibold" style={{ color: '#3b2010' }}>{tableNumber}</p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            Dashboard
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/orders')}
-            className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            Orders
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/kitchen')}
-            className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            Kitchen
-          </button>
+          {[
+            { label: 'Dashboard', path: '/dashboard' },
+            { label: 'Orders',    path: '/orders' },
+            { label: 'Kitchen',   path: '/kitchen' },
+          ].map(({ label, path }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => navigate(path)}
+              className="btn-primary px-3 py-2 text-xs"
+            >
+              {label}
+            </button>
+          ))}
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-500"
+            className="rounded-2xl px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90 active:scale-95"
+            style={{ background: '#b91c1c' }}
           >
             Logout
           </button>

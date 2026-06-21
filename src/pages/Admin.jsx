@@ -34,7 +34,7 @@ export default function Admin() {
   const TAXES = ['0%', '5%', '12%', '18%'];
 
   const [productForm, setProductForm] = useState({
-    name: '', price: '', category: '', unitOfMeasure: '', tax: '', description: '',
+    name: '', price: '', category: '', unitOfMeasure: '', tax: '', description: '', image: '',
   });
   const [categoryForm, setCategoryForm] = useState({ name: '' });
   const [tableForm, setTableForm] = useState({ number: '', seats: '', floor: '' });
@@ -113,6 +113,7 @@ export default function Admin() {
       unitOfMeasure: productForm.unitOfMeasure,
       tax: productForm.tax,
       description: productForm.description.trim(),
+      image: productForm.image.trim(),
     };
 
     // ✅ Always read fresh from localStorage — guards against any stale closure
@@ -127,7 +128,7 @@ export default function Admin() {
 
     setProducts(updatedProducts);
     localStorage.setItem('products', JSON.stringify(updatedProducts));
-    setProductForm({ name: '', price: '', category: '', unitOfMeasure: '', tax: '', description: '' });
+    setProductForm({ name: '', price: '', category: '', unitOfMeasure: '', tax: '', description: '', image: '' });
     setEditingId(null);
     setEditingType(null);
     alert(editingId ? 'Product updated' : 'Product added');
@@ -154,6 +155,7 @@ export default function Admin() {
       unitOfMeasure: product.unitOfMeasure || '',
       tax: product.tax || '',
       description: product.description || '',
+      image: product.image || '',
     });
     setEditingId(product.id);
     setEditingType('product');
@@ -259,56 +261,76 @@ export default function Admin() {
   const cancelEdit = () => {
     setEditingId(null);
     setEditingType(null);
-    setProductForm({ name: '', price: '', category: '', unitOfMeasure: '', tax: '', description: '' });
+    setProductForm({ name: '', price: '', category: '', unitOfMeasure: '', tax: '', description: '', image: '' });
     setCategoryForm({ name: '' });
     setTableForm({ number: '', seats: '', floor: '' });
     setShowNewCategory(false);
     setNewCategoryName('');
   };
 
+  // ── shared field style helpers ──────────────────────────────────────────────
+  const inputCls = 'café-input mt-2';
+  const selectCls = 'café-select mt-2';
+  const labelCls = 'block text-sm font-semibold';
+
+  const Toggle = ({ checked, onChange }) => (
+    <label className="relative inline-flex cursor-pointer items-center">
+      <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
+      <div className="peer h-6 w-11 rounded-full after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none"
+           style={{ background: checked ? '#c97a34' : '#e2e8f0' }} />
+    </label>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10 sm:px-6 lg:px-8">
+    <div className="page-shell">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="rounded-3xl bg-white p-8 shadow-sm shadow-slate-200/80">
+
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div className="café-card p-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Odoo Cafe</p>
-              <h1 className="text-3xl font-semibold text-slate-900">Admin Dashboard</h1>
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl shadow-coffee-sm"
+                   style={{ background: 'linear-gradient(135deg,#c97a34,#7e4720)' }}>
+                ⚙️
+              </div>
+              <div>
+                <p className="section-label">Odoo Cafe</p>
+                <h1 className="text-2xl font-bold" style={{ color: '#3b2010', fontFamily: "'Playfair Display', serif" }}>
+                  Admin Dashboard
+                </h1>
+              </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-slate-100 px-4 py-2">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Logged In As</p>
-                <p className="text-sm font-semibold text-slate-900">{roleLabel}: {displayName}</p>
+              <div className="rounded-2xl px-4 py-2.5 text-center" style={{ background: '#f7e8d3' }}>
+                <p className="section-label text-[9px]">Logged In As</p>
+                <p className="mt-0.5 text-sm font-bold" style={{ color: '#3b2010' }}>{roleLabel}: {displayName}</p>
               </div>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-3xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-500"
-              >
+              <button type="button" onClick={handleLogout}
+                className="rounded-2xl px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                style={{ background: '#b91c1c' }}>
                 Logout
               </button>
             </div>
           </div>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-            Manage products, categories, and tables. All changes are saved to local storage.
+          <p className="mt-3 text-sm leading-6" style={{ color: '#7e4720' }}>
+            Manage products, categories, tables and payment settings. All changes are saved to local storage.
           </p>
         </div>
 
-        <div className="rounded-3xl bg-white shadow-sm shadow-slate-200/80">
-          <div className="flex flex-wrap gap-2 border-b border-slate-200 p-6">
+        {/* ── Tab panel ───────────────────────────────────────────────────── */}
+        <div className="café-card overflow-hidden">
+          {/* Tab bar */}
+          <div className="flex flex-wrap gap-2 border-b p-5" style={{ borderColor: '#eecba0' }}>
             {['products', 'categories', 'tables', 'payments'].map((tab) => (
               <button
                 key={tab}
                 type="button"
-                onClick={() => {
-                  setActiveTab(tab);
-                  cancelEdit();
-                }}
-                className={`rounded-2xl px-5 py-2 text-sm font-semibold transition ${
-                  activeTab === tab
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                onClick={() => { setActiveTab(tab); cancelEdit(); }}
+                className="rounded-full px-5 py-2 text-sm font-semibold transition-all"
+                style={activeTab === tab
+                  ? { background: 'linear-gradient(135deg,#3b2010,#7e4720)', color: '#fff' }
+                  : { background: '#f7e8d3', color: '#7e4720' }
+                }
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
@@ -316,199 +338,170 @@ export default function Admin() {
           </div>
 
           <div className="p-6">
-            {/* Products Tab */}
+
+            {/* ════ PRODUCTS TAB ═══════════════════════════════════════════ */}
             {activeTab === 'products' && (
               <div className="space-y-6">
-                {/* ── Product Form ─────────────────────────────── */}
-                <div className="rounded-3xl bg-slate-50 p-6">
-                  <h2 className="mb-4 text-lg font-semibold text-slate-900">
-                    {editingId && editingType === 'product' ? 'Edit Product' : 'Add New Product'}
+                {/* Form */}
+                <div className="rounded-3xl p-6" style={{ background: '#fdf6ee', border: '1.5px solid #eecba0' }}>
+                  <h2 className="mb-5 text-lg font-bold" style={{ color: '#3b2010', fontFamily: "'Playfair Display', serif" }}>
+                    {editingId && editingType === 'product' ? '✏️ Edit Product' : '+ Add New Product'}
                   </h2>
                   <form onSubmit={handleAddProduct} className="space-y-4">
-                    {/* Row 1: Name + Price */}
+                    {/* Name + Price */}
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700">Product Name <span className="text-rose-500">*</span></label>
-                        <input
-                          type="text"
-                          value={productForm.name}
+                        <label className={labelCls} style={{ color: '#5a3218' }}>Product Name <span className="text-rose-500">*</span></label>
+                        <input type="text" value={productForm.name}
                           onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                          placeholder="e.g., Masala Dosa"
-                          className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900"
-                        />
+                          placeholder="e.g., Masala Dosa" className={inputCls} />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700">Price (₹) <span className="text-rose-500">*</span></label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={productForm.price}
+                        <label className={labelCls} style={{ color: '#5a3218' }}>Price (₹) <span className="text-rose-500">*</span></label>
+                        <input type="number" step="0.01" min="0" value={productForm.price}
                           onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                          className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900"
-                        />
+                          className={inputCls} />
                       </div>
                     </div>
 
-                    {/* Row 2: Category */}
+                    {/* Category */}
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700">Category <span className="text-rose-500">*</span></label>
+                      <label className={labelCls} style={{ color: '#5a3218' }}>Category <span className="text-rose-500">*</span></label>
                       {!showNewCategory ? (
                         <div className="mt-2 flex gap-2">
-                          <select
-                            value={productForm.category}
+                          <select value={productForm.category}
                             onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                            className="flex-1 rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900 bg-white"
-                          >
+                            className={selectCls + ' flex-1'} style={{ marginTop: 0 }}>
                             <option value="">Select a category</option>
                             {categories.map((cat) => (
                               <option key={cat} value={cat}>{cat}</option>
                             ))}
                           </select>
-                          <button
-                            type="button"
-                            onClick={() => setShowNewCategory(true)}
-                            className="rounded-2xl border border-dashed border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-900 hover:text-slate-900 whitespace-nowrap"
-                          >
-                            + New Category
+                          <button type="button" onClick={() => setShowNewCategory(true)}
+                            className="rounded-2xl border-2 border-dashed px-4 py-2 text-sm font-semibold transition whitespace-nowrap"
+                            style={{ borderColor: '#eecba0', color: '#7e4720' }}>
+                            + New
                           </button>
                         </div>
                       ) : (
                         <div className="mt-2 flex gap-2">
-                          <input
-                            type="text"
-                            value={newCategoryName}
+                          <input type="text" value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
-                            placeholder="New category name"
-                            className="flex-1 rounded-2xl border border-amber-400 px-4 py-2 text-slate-900 outline-none focus:border-slate-900"
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            onClick={handleSaveNewCategory}
-                            className="rounded-2xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => { setShowNewCategory(false); setNewCategoryName(''); }}
-                            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
-                          >
-                            Cancel
-                          </button>
+                            placeholder="New category name" autoFocus className={inputCls + ' flex-1'} style={{ marginTop: 0 }} />
+                          <button type="button" onClick={handleSaveNewCategory} className="btn-accent px-4">Save</button>
+                          <button type="button" onClick={() => { setShowNewCategory(false); setNewCategoryName(''); }}
+                            className="btn-outline px-4">Cancel</button>
                         </div>
                       )}
                     </div>
 
-                    {/* Row 3: Unit of Measure + Tax */}
+                    {/* Unit + Tax */}
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700">Unit of Measure <span className="text-rose-500">*</span></label>
-                        <select
-                          value={productForm.unitOfMeasure}
+                        <label className={labelCls} style={{ color: '#5a3218' }}>Unit of Measure <span className="text-rose-500">*</span></label>
+                        <select value={productForm.unitOfMeasure}
                           onChange={(e) => setProductForm({ ...productForm, unitOfMeasure: e.target.value })}
-                          className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900 bg-white"
-                        >
+                          className={selectCls}>
                           <option value="">Select unit</option>
                           {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700">Tax <span className="text-rose-500">*</span></label>
-                        <select
-                          value={productForm.tax}
+                        <label className={labelCls} style={{ color: '#5a3218' }}>Tax <span className="text-rose-500">*</span></label>
+                        <select value={productForm.tax}
                           onChange={(e) => setProductForm({ ...productForm, tax: e.target.value })}
-                          className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900 bg-white"
-                        >
+                          className={selectCls}>
                           <option value="">Select tax rate</option>
                           {TAXES.map((t) => <option key={t} value={t}>{t}</option>)}
                         </select>
                       </div>
                     </div>
 
-                    {/* Row 4: Description */}
+                    {/* Description */}
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700">Description <span className="text-slate-400 font-normal">(optional)</span></label>
-                      <textarea
-                        value={productForm.description}
+                      <label className={labelCls} style={{ color: '#5a3218' }}>
+                        Description <span className="font-normal" style={{ color: '#a8602a' }}>(optional)</span>
+                      </label>
+                      <textarea value={productForm.description}
                         onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                        placeholder="Short description of the product"
-                        rows={2}
-                        className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900 resize-none"
-                      />
+                        placeholder="Short description" rows={2}
+                        className={inputCls + ' resize-none'} />
+                    </div>
+
+                    {/* Image URL */}
+                    <div>
+                      <label className={labelCls} style={{ color: '#5a3218' }}>
+                        Image URL <span className="font-normal" style={{ color: '#a8602a' }}>(optional — e.g. /images/burger.jpg)</span>
+                      </label>
+                      <div className="mt-2 flex gap-3 items-center">
+                        <input type="text" value={productForm.image}
+                          onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
+                          placeholder="/images/burger.jpg or https://…" className="café-input flex-1" />
+                        {productForm.image && (
+                          <img src={productForm.image} alt="preview"
+                            className="h-10 w-10 rounded-xl object-cover shrink-0"
+                            style={{ border: '1.5px solid #eecba0' }}
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        )}
+                      </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        className="flex-1 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-                      >
+                    <div className="flex gap-3 pt-1">
+                      <button type="submit" className="btn-primary flex-1 py-3">
                         {editingId ? 'Update Product' : 'Add Product'}
                       </button>
                       {editingId && (
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="flex-1 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                        >
-                          Cancel
-                        </button>
+                        <button type="button" onClick={cancelEdit} className="btn-outline flex-1 py-3">Cancel</button>
                       )}
                     </div>
                   </form>
                 </div>
 
-                {/* ── Product List Table ────────────────────────── */}
+                {/* Product list */}
                 {products.length === 0 ? (
-                  <p className="rounded-2xl bg-slate-50 p-4 text-center text-slate-500">No products yet.</p>
+                  <p className="rounded-2xl p-5 text-center text-sm" style={{ background: '#fdf6ee', color: '#a8602a' }}>
+                    No products yet.
+                  </p>
                 ) : (
-                  <div className="overflow-hidden rounded-3xl border border-slate-200">
-                    <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                      <thead className="bg-slate-50 text-slate-500">
+                  <div className="overflow-hidden rounded-2xl border-2" style={{ borderColor: '#eecba0' }}>
+                    <table className="min-w-full divide-y text-left text-sm">
+                      <thead style={{ background: '#f7e8d3' }}>
                         <tr>
-                          <th className="px-5 py-3 uppercase tracking-widest text-xs">Name</th>
-                          <th className="px-5 py-3 uppercase tracking-widest text-xs">Category</th>
-                          <th className="px-5 py-3 uppercase tracking-widest text-xs">Price</th>
-                          <th className="px-5 py-3 uppercase tracking-widest text-xs">Unit</th>
-                          <th className="px-5 py-3 uppercase tracking-widest text-xs">Tax</th>
-                          <th className="px-5 py-3 uppercase tracking-widest text-xs">Actions</th>
+                          {['Image', 'Name', 'Category', 'Price', 'Unit', 'Tax', 'Actions'].map((h) => (
+                            <th key={h} className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: '#a8602a' }}>{h}</th>
+                          ))}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 bg-white">
+                      <tbody style={{ background: '#fff' }}>
                         {products.map((product) => (
-                          <tr key={product.id} className="hover:bg-slate-50">
-                            <td className="px-5 py-3 font-semibold text-slate-900">
+                          <tr key={product.id} className="hover:bg-[#fdf6ee] transition-colors border-t" style={{ borderColor: '#f7e8d3' }}>
+                            <td className="px-4 py-3">
+                              <img src={product.image || '/images/placeholder.png'} alt={product.name}
+                                className="h-10 w-10 rounded-xl object-cover"
+                                style={{ border: '1.5px solid #eecba0' }}
+                                onError={(e) => { e.currentTarget.src = '/images/placeholder.png'; }} />
+                            </td>
+                            <td className="px-4 py-3 font-bold" style={{ color: '#3b2010' }}>
                               {product.name}
                               {product.description && (
-                                <p className="text-xs font-normal text-slate-400 mt-0.5">{product.description}</p>
+                                <p className="text-xs font-normal mt-0.5" style={{ color: '#a8602a' }}>{product.description}</p>
                               )}
                             </td>
-                            <td className="px-5 py-3 text-slate-600">{product.category}</td>
-                            <td className="px-5 py-3 text-slate-900">₹{product.price.toFixed(2)}</td>
-                            <td className="px-5 py-3 text-slate-600">{product.unitOfMeasure || '—'}</td>
-                            <td className="px-5 py-3">
-                              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                                {product.tax || '—'}
-                              </span>
+                            <td className="px-4 py-3 text-sm" style={{ color: '#5a3218' }}>{product.category}</td>
+                            <td className="px-4 py-3 font-bold" style={{ color: '#c97a34' }}>₹{product.price.toFixed(2)}</td>
+                            <td className="px-4 py-3 text-sm" style={{ color: '#5a3218' }}>{product.unitOfMeasure || '—'}</td>
+                            <td className="px-4 py-3">
+                              <span className="badge-warm text-[10px]">{product.tax || '—'}</span>
                             </td>
-                            <td className="px-5 py-3">
+                            <td className="px-4 py-3">
                               <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleEditProduct(product)}
-                                  className="rounded-2xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-200"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteProduct(product.id)}
-                                  className="rounded-2xl bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
-                                >
-                                  Delete
-                                </button>
+                                <button type="button" onClick={() => handleEditProduct(product)}
+                                  className="rounded-xl px-3 py-1.5 text-xs font-bold transition hover:opacity-80"
+                                  style={{ background: '#f7e8d3', color: '#3b2010' }}>Edit</button>
+                                <button type="button" onClick={() => handleDeleteProduct(product.id)}
+                                  className="rounded-xl px-3 py-1.5 text-xs font-bold transition hover:opacity-80"
+                                  style={{ background: '#fee2e2', color: '#b91c1c' }}>Delete</button>
                               </div>
                             </td>
                           </tr>
@@ -520,38 +513,26 @@ export default function Admin() {
               </div>
             )}
 
-            {/* Categories Tab */}
+            {/* ════ CATEGORIES TAB ════════════════════════════════════════ */}
             {activeTab === 'categories' && (
               <div className="space-y-6">
-                <div className="rounded-3xl bg-slate-50 p-6">
-                  <h2 className="mb-4 text-lg font-semibold text-slate-900">
-                    {editingId && editingType === 'category' ? 'Edit Category' : 'Add New Category'}
+                <div className="rounded-3xl p-6" style={{ background: '#fdf6ee', border: '1.5px solid #eecba0' }}>
+                  <h2 className="mb-5 text-lg font-bold" style={{ color: '#3b2010', fontFamily: "'Playfair Display', serif" }}>
+                    {editingId && editingType === 'category' ? '✏️ Edit Category' : '+ Add New Category'}
                   </h2>
                   <form onSubmit={handleAddCategory} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700">Category Name</label>
-                      <input
-                        type="text"
-                        value={categoryForm.name}
+                      <label className={labelCls} style={{ color: '#5a3218' }}>Category Name</label>
+                      <input type="text" value={categoryForm.name}
                         onChange={(e) => setCategoryForm({ name: e.target.value })}
-                        className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900"
-                      />
+                        className={inputCls} />
                     </div>
                     <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        className="flex-1 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-                      >
+                      <button type="submit" className="btn-primary flex-1 py-3">
                         {editingId ? 'Update Category' : 'Add Category'}
                       </button>
                       {editingId && (
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="flex-1 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                        >
-                          Cancel
-                        </button>
+                        <button type="button" onClick={cancelEdit} className="btn-outline flex-1 py-3">Cancel</button>
                       )}
                     </div>
                   </form>
@@ -559,26 +540,20 @@ export default function Admin() {
 
                 <div className="space-y-3">
                   {categories.length === 0 ? (
-                    <p className="rounded-2xl bg-slate-50 p-4 text-center text-slate-500">No categories yet.</p>
+                    <p className="rounded-2xl p-4 text-center text-sm" style={{ background: '#fdf6ee', color: '#a8602a' }}>No categories yet.</p>
                   ) : (
                     categories.map((category) => (
-                      <div key={category.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4">
-                        <p className="font-semibold text-slate-900">{category.name}</p>
+                      <div key={category.id}
+                           className="flex items-center justify-between rounded-2xl border-2 bg-white p-4"
+                           style={{ borderColor: '#eecba0' }}>
+                        <p className="font-bold" style={{ color: '#3b2010' }}>{category.name}</p>
                         <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditCategory(category)}
-                            className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-200"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteCategory(category.id)}
-                            className="rounded-2xl bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-200"
-                          >
-                            Delete
-                          </button>
+                          <button type="button" onClick={() => handleEditCategory(category)}
+                            className="rounded-xl px-4 py-2 text-sm font-bold transition hover:opacity-80"
+                            style={{ background: '#f7e8d3', color: '#3b2010' }}>Edit</button>
+                          <button type="button" onClick={() => handleDeleteCategory(category.id)}
+                            className="rounded-xl px-4 py-2 text-sm font-bold transition hover:opacity-80"
+                            style={{ background: '#fee2e2', color: '#b91c1c' }}>Delete</button>
                         </div>
                       </div>
                     ))
@@ -587,60 +562,42 @@ export default function Admin() {
               </div>
             )}
 
-            {/* Tables Tab */}
+            {/* ════ TABLES TAB ════════════════════════════════════════════ */}
             {activeTab === 'tables' && (
               <div className="space-y-6">
-                <div className="rounded-3xl bg-slate-50 p-6">
-                  <h2 className="mb-4 text-lg font-semibold text-slate-900">
-                    {editingId && editingType === 'table' ? 'Edit Table' : 'Add New Table'}
+                <div className="rounded-3xl p-6" style={{ background: '#fdf6ee', border: '1.5px solid #eecba0' }}>
+                  <h2 className="mb-5 text-lg font-bold" style={{ color: '#3b2010', fontFamily: "'Playfair Display', serif" }}>
+                    {editingId && editingType === 'table' ? '✏️ Edit Table' : '+ Add New Table'}
                   </h2>
                   <form onSubmit={handleAddTable} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700">Table Number</label>
-                      <input
-                        type="text"
-                        value={tableForm.number}
+                      <label className={labelCls} style={{ color: '#5a3218' }}>Table Number</label>
+                      <input type="text" value={tableForm.number}
                         onChange={(e) => setTableForm({ ...tableForm, number: e.target.value })}
-                        placeholder="e.g., Table 1"
-                        className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900"
-                      />
+                        placeholder="e.g., Table 7" className={inputCls} />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700">Number of Seats</label>
-                      <input
-                        type="number"
-                        value={tableForm.seats}
+                      <label className={labelCls} style={{ color: '#5a3218' }}>Number of Seats</label>
+                      <input type="number" value={tableForm.seats}
                         onChange={(e) => setTableForm({ ...tableForm, seats: e.target.value })}
-                        className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900"
-                      />
+                        className={inputCls} />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700">Floor</label>
-                      <select
-                        value={tableForm.floor}
+                      <label className={labelCls} style={{ color: '#5a3218' }}>Floor</label>
+                      <select value={tableForm.floor}
                         onChange={(e) => setTableForm({ ...tableForm, floor: e.target.value })}
-                        className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-slate-900 outline-none focus:border-slate-900"
-                      >
+                        className={selectCls}>
                         <option value="">Select Floor</option>
                         <option value="Ground Floor">Ground Floor</option>
                         <option value="First Floor">First Floor</option>
                       </select>
                     </div>
                     <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        className="flex-1 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-                      >
+                      <button type="submit" className="btn-primary flex-1 py-3">
                         {editingId ? 'Update Table' : 'Add Table'}
                       </button>
                       {editingId && (
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="flex-1 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                        >
-                          Cancel
-                        </button>
+                        <button type="button" onClick={cancelEdit} className="btn-outline flex-1 py-3">Cancel</button>
                       )}
                     </div>
                   </form>
@@ -648,29 +605,23 @@ export default function Admin() {
 
                 <div className="space-y-3">
                   {tables.length === 0 ? (
-                    <p className="rounded-2xl bg-slate-50 p-4 text-center text-slate-500">No tables yet.</p>
+                    <p className="rounded-2xl p-4 text-center text-sm" style={{ background: '#fdf6ee', color: '#a8602a' }}>No tables yet.</p>
                   ) : (
                     tables.map((table) => (
-                      <div key={table.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4">
+                      <div key={table.id}
+                           className="flex items-center justify-between rounded-2xl border-2 bg-white p-4"
+                           style={{ borderColor: '#eecba0' }}>
                         <div>
-                          <p className="font-semibold text-slate-900">{table.number}</p>
-                          <p className="text-sm text-slate-600">{table.seats} seats • {table.floor}</p>
+                          <p className="font-bold" style={{ color: '#3b2010' }}>{table.number}</p>
+                          <p className="text-sm" style={{ color: '#7e4720' }}>{table.seats} seats • {table.floor}</p>
                         </div>
                         <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditTable(table)}
-                            className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-200"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteTable(table.id)}
-                            className="rounded-2xl bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-200"
-                          >
-                            Delete
-                          </button>
+                          <button type="button" onClick={() => handleEditTable(table)}
+                            className="rounded-xl px-4 py-2 text-sm font-bold transition hover:opacity-80"
+                            style={{ background: '#f7e8d3', color: '#3b2010' }}>Edit</button>
+                          <button type="button" onClick={() => handleDeleteTable(table.id)}
+                            className="rounded-xl px-4 py-2 text-sm font-bold transition hover:opacity-80"
+                            style={{ background: '#fee2e2', color: '#b91c1c' }}>Delete</button>
                         </div>
                       </div>
                     ))
@@ -678,91 +629,70 @@ export default function Admin() {
                 </div>
               </div>
             )}
-            {/* Payments Tab */}
+
+            {/* ════ PAYMENTS TAB ══════════════════════════════════════════ */}
             {activeTab === 'payments' && (
               <div className="space-y-6">
-                <div className="rounded-3xl bg-slate-50 p-6">
-                  <h2 className="mb-4 text-lg font-semibold text-slate-900">Payment Settings</h2>
-                  <form onSubmit={handleSavePaymentSettings} className="space-y-6 max-w-lg">
-                    {/* Cash Method */}
-                    <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="rounded-3xl p-6" style={{ background: '#fdf6ee', border: '1.5px solid #eecba0' }}>
+                  <h2 className="mb-5 text-lg font-bold" style={{ color: '#3b2010', fontFamily: "'Playfair Display', serif" }}>
+                    💳 Payment Settings
+                  </h2>
+                  <form onSubmit={handleSavePaymentSettings} className="space-y-4 max-w-lg">
+
+                    {/* Cash */}
+                    <div className="flex items-center justify-between rounded-2xl border-2 bg-white p-4"
+                         style={{ borderColor: '#eecba0' }}>
                       <div>
-                        <p className="font-semibold text-slate-900">Cash Payment</p>
-                        <p className="text-xs text-slate-500">Enable cash transactions at POS checkout</p>
+                        <p className="font-bold" style={{ color: '#3b2010' }}>Cash Payment</p>
+                        <p className="text-xs mt-0.5" style={{ color: '#7e4720' }}>Enable cash transactions at POS checkout</p>
                       </div>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input
-                          type="checkbox"
-                          checked={paymentSettings.cash}
-                          onChange={(e) => setPaymentSettings({ ...paymentSettings, cash: e.target.checked })}
-                          className="peer sr-only"
-                        />
-                        <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-amber-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none"></div>
-                      </label>
+                      <Toggle checked={paymentSettings.cash}
+                        onChange={(e) => setPaymentSettings({ ...paymentSettings, cash: e.target.checked })} />
                     </div>
 
-                    {/* Card Method */}
-                    <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    {/* Card */}
+                    <div className="flex items-center justify-between rounded-2xl border-2 bg-white p-4"
+                         style={{ borderColor: '#eecba0' }}>
                       <div>
-                        <p className="font-semibold text-slate-900">Digital / Card Payment</p>
-                        <p className="text-xs text-slate-500">Enable card swipe or digital wallet options</p>
+                        <p className="font-bold" style={{ color: '#3b2010' }}>Digital / Card Payment</p>
+                        <p className="text-xs mt-0.5" style={{ color: '#7e4720' }}>Enable card swipe or digital wallet options</p>
                       </div>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input
-                          type="checkbox"
-                          checked={paymentSettings.card}
-                          onChange={(e) => setPaymentSettings({ ...paymentSettings, card: e.target.checked })}
-                          className="peer sr-only"
-                        />
-                        <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-amber-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none"></div>
-                      </label>
+                      <Toggle checked={paymentSettings.card}
+                        onChange={(e) => setPaymentSettings({ ...paymentSettings, card: e.target.checked })} />
                     </div>
 
-                    {/* UPI Method */}
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4 shadow-sm">
+                    {/* UPI */}
+                    <div className="rounded-2xl border-2 bg-white p-4 space-y-4" style={{ borderColor: '#eecba0' }}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-semibold text-slate-900">UPI QR Code Payment</p>
-                          <p className="text-xs text-slate-500">Enable UPI QR code display for instant mobile payment</p>
+                          <p className="font-bold" style={{ color: '#3b2010' }}>UPI QR Code Payment</p>
+                          <p className="text-xs mt-0.5" style={{ color: '#7e4720' }}>Enable UPI QR display for instant mobile payment</p>
                         </div>
-                        <label className="relative inline-flex cursor-pointer items-center">
-                          <input
-                            type="checkbox"
-                            checked={paymentSettings.upi}
-                            onChange={(e) => setPaymentSettings({ ...paymentSettings, upi: e.target.checked })}
-                            className="peer sr-only"
-                          />
-                          <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-amber-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none"></div>
-                        </label>
+                        <Toggle checked={paymentSettings.upi}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, upi: e.target.checked })} />
                       </div>
-
                       {paymentSettings.upi && (
-                        <div className="pt-4 border-t border-slate-100">
-                          <label className="block text-sm font-semibold text-slate-700">UPI ID / VPA</label>
-                          <input
-                            type="text"
-                            value={paymentSettings.upiId}
+                        <div className="border-t pt-4" style={{ borderColor: '#eecba0' }}>
+                          <label className={labelCls} style={{ color: '#5a3218' }}>UPI ID / VPA</label>
+                          <input type="text" value={paymentSettings.upiId}
                             onChange={(e) => setPaymentSettings({ ...paymentSettings, upiId: e.target.value })}
-                            placeholder="e.g. cafe@ybl"
-                            className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm text-slate-900 outline-none focus:border-slate-900"
-                          />
+                            placeholder="e.g. cafe@ybl" className={inputCls} />
                         </div>
                       )}
                     </div>
 
-                    <button
-                      type="submit"
-                      className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-                    >
+                    <button type="submit" className="btn-primary w-full py-3.5">
                       Save Settings
                     </button>
                   </form>
                 </div>
               </div>
             )}
+
           </div>
         </div>
       </div>
     </div>
   );
 }
+

@@ -1,54 +1,66 @@
+// ── Cart — warm brown café theme ─────────────────────────────────────────────
 export default function Cart({ cartItems, onIncrease, onDecrease, onRemove }) {
   return (
-    <section className="space-y-4 rounded-3xl bg-white p-6 shadow-sm shadow-slate-200/70">
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+    <section className="café-card space-y-4 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: '#eecba0' }}>
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Cart</h2>
-          <p className="text-sm text-slate-500">Review and update selected items</p>
+          <h2 className="text-lg font-bold" style={{ color: '#3b2010', fontFamily: "'Playfair Display', serif" }}>
+            Your Order
+          </h2>
+          <p className="text-xs" style={{ color: '#a8602a' }}>Review and update selected items</p>
         </div>
-        <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
-          {cartItems.length} items
+        <span className="badge-warm">
+          {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
         </span>
       </div>
 
-      <div className="space-y-4">
+      {/* Items */}
+      <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
         {cartItems.length === 0 ? (
-          <p className="rounded-3xl border border-dashed border-slate-300 px-6 py-10 text-center text-slate-500">
-            Your cart is empty. Add products to begin the order.
-          </p>
+          <div className="rounded-2xl border-2 border-dashed px-6 py-10 text-center"
+               style={{ borderColor: '#eecba0', color: '#a8602a' }}>
+            <p className="text-2xl mb-2">🛒</p>
+            <p className="text-sm font-medium">Your cart is empty</p>
+            <p className="text-xs mt-1 opacity-70">Add products to begin the order</p>
+          </div>
         ) : (
           cartItems.map((item) => (
-            <div key={item.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+            <div key={item.id} className="rounded-2xl p-4" style={{ background: '#fdf6ee', border: '1.5px solid #eecba0' }}>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-slate-900">{item.name}</h3>
-                  <p className="text-sm text-slate-500">Unit: ₹{item.price}</p>
+                  <h3 className="text-sm font-bold" style={{ color: '#3b2010' }}>{item.name}</h3>
+                  <p className="text-xs mt-0.5" style={{ color: '#a8602a' }}>₹{item.price} each</p>
                 </div>
-                <div className="flex items-center gap-2 rounded-full bg-white p-1 shadow-sm shadow-slate-200">
+                {/* Qty controls */}
+                <div className="flex items-center gap-2 rounded-full px-1 py-1 shadow-coffee-sm"
+                     style={{ background: '#fff', border: '1.5px solid #eecba0' }}>
                   <button
                     type="button"
                     onClick={() => onDecrease(item.id)}
-                    className="h-9 w-9 rounded-full bg-slate-100 text-lg font-bold text-slate-700 transition hover:bg-slate-200"
-                  >
-                    -
-                  </button>
-                  <span className="min-w-[2rem] text-center text-sm font-semibold text-slate-900">{item.quantity}</span>
+                    className="h-8 w-8 rounded-full text-base font-bold transition hover:scale-110 active:scale-95"
+                    style={{ background: '#f7e8d3', color: '#7e4720' }}
+                  >−</button>
+                  <span className="min-w-[1.75rem] text-center text-sm font-bold" style={{ color: '#3b2010' }}>
+                    {item.quantity}
+                  </span>
                   <button
                     type="button"
                     onClick={() => onIncrease(item.id)}
-                    className="h-9 w-9 rounded-full bg-slate-100 text-lg font-bold text-slate-700 transition hover:bg-slate-200"
-                  >
-                    +
-                  </button>
+                    className="h-8 w-8 rounded-full text-base font-bold transition hover:scale-110 active:scale-95"
+                    style={{ background: 'linear-gradient(135deg,#c97a34,#7e4720)', color: '#fff' }}
+                  >+</button>
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-slate-600">Line Total: ₹{item.quantity * item.price}</div>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span className="font-bold" style={{ color: '#c97a34' }}>
+                  ₹{(item.quantity * item.price).toFixed(2)}
+                </span>
                 <button
                   type="button"
                   onClick={() => onRemove(item.id)}
-                  className="text-sm font-semibold text-rose-600 transition hover:text-rose-800"
+                  className="text-xs font-semibold text-rose-600 transition hover:text-rose-800"
                 >
                   Remove
                 </button>
