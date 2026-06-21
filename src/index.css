@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --coffee-50:  #fdf6ee;
+  --coffee-100: #f7e8d3;
+  --coffee-200: #eecba0;
+  --coffee-300: #e3a96d;
+  --coffee-400: #d98a46;
+  --coffee-500: #c97a34;
+  --coffee-600: #a8602a;
+  --coffee-700: #7e4720;
+  --coffee-800: #5a3218;
+  --coffee-900: #3b2010;
+  --cream-100:  #fdf5e4;
+  --cream-200:  #fae8c0;
+}
+
+/* ─── Base ──────────────────────────────── */
+body {
+  @apply antialiased;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background-color: #f7e8d3; /* coffee-100 */
+  color: #3b2010;
+}
+
+* { @apply box-border; }
+
+/* ─── Scrollbar ─────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f7e8d3; }
+::-webkit-scrollbar-thumb { background: #c97a34; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #7e4720; }
+
+/* ─── Utility classes ───────────────────── */
+@layer components {
+  /* Card */
+  .café-card {
+    @apply rounded-3xl bg-white shadow-coffee-sm border border-coffee-100 transition-all duration-200;
+  }
+  .café-card-dark {
+    @apply rounded-3xl shadow-coffee-md;
+    background: #3b2010;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply rounded-2xl px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 active:scale-95;
+    background: #3b2010;
+  }
+  .btn-primary:hover { background: #5a3218; }
+
+  .btn-accent {
+    @apply rounded-2xl px-5 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-95;
+    background: #c97a34;
+    color: #fff;
+  }
+  .btn-accent:hover { background: #a8602a; }
+
+  .btn-outline {
+    @apply rounded-2xl px-5 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-95 border;
+    border-color: #eecba0;
+    color: #5a3218;
+    background: transparent;
+  }
+  .btn-outline:hover { background: #fdf6ee; }
+
+  /* Inputs */
+  .café-input {
+    @apply w-full rounded-2xl px-4 py-3 text-sm outline-none transition duration-150;
+    background: #fdf6ee;
+    border: 1.5px solid #eecba0;
+    color: #3b2010;
+  }
+  .café-input::placeholder { color: #a8602a; opacity: 0.5; }
+  .café-input:focus { border-color: #c97a34; box-shadow: 0 0 0 3px rgba(201,122,52,0.15); }
+
+  /* Select */
+  .café-select {
+    @apply w-full rounded-2xl px-4 py-3 text-sm outline-none transition duration-150 appearance-none;
+    background: #fdf6ee;
+    border: 1.5px solid #eecba0;
+    color: #3b2010;
+  }
+  .café-select:focus { border-color: #c97a34; box-shadow: 0 0 0 3px rgba(201,122,52,0.15); }
+
+  /* Badges */
+  .badge-warm { @apply rounded-full px-3 py-1 text-xs font-semibold; background:#fae8c0; color:#7e4720; }
+  .badge-green { @apply rounded-full px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700; }
+  .badge-red   { @apply rounded-full px-3 py-1 text-xs font-semibold bg-rose-100 text-rose-700; }
+  .badge-amber { @apply rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700; }
+  .badge-sky   { @apply rounded-full px-3 py-1 text-xs font-semibold bg-sky-100 text-sky-700; }
+  .badge-violet{ @apply rounded-full px-3 py-1 text-xs font-semibold bg-violet-100 text-violet-700; }
+
+  /* Section label */
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-[0.25em];
+    color: #a8602a;
+  }
+
+  /* Page container */
+  .page-shell {
+    @apply min-h-screen px-4 py-8 sm:px-6 lg:px-8;
+    background: linear-gradient(135deg, #f7e8d3 0%, #fdf6ee 60%, #fae8c0 100%);
+  }
+}
+
+/* ─── Animations ────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 0.4s ease both; }
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
